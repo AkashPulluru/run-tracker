@@ -1,0 +1,13 @@
+@"
+# Python
+backend/venv/
+__pycache__/
+*.pyc
+
+# Node.js
+frontend/node_modules/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+"@ | Out-File -Encoding utf8 .gitignore
