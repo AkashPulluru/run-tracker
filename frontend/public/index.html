@@ -2,10 +2,13 @@
 <html>
 <head>
     <title>Run Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <canvas id="runChart" width="400" height="200"></canvas>
 </head>
 <body>
     <h1>Run Tracker</h1>
-    
+    <input id="username" placeholder="Enter username">
+    <button onclick="registerUser()">Login / Register</button>
     <div>
         <input type="number" id="distance" placeholder="Distance (km)">
         <input type="number" id="duration" placeholder="Duration (minutes)">
@@ -19,3 +22,5 @@
     <script src="script.js"></script>
 </body>
 </html>
+
+
