@@ -52,16 +52,19 @@ def add_run():
     conn.close()
     return jsonify({'message': 'Run added'})
 
+
 @app.route('/runs', methods=['GET'])
 def get_runs():
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    cursor.execute('SELECT id, distance, duration, date FROM runs')
+    cursor.execute('SELECT id, user_id, distance, duration, date FROM runs')
     runs = cursor.fetchall()
     conn.close()
 
-    runs_list = [{'id': run[0], 'distance': run[1], 'duration': run[2], 'date': run[3]} for run in runs]
-    return jsonify(runs_list)
+    return jsonify([
+        {'id': r[0], 'user_id': r[1], 'distance': r[2], 'duration': r[3], 'date': r[4]}
+        for r in runs
+    ])
 
 @app.route('/register', methods=['POST'])
 def register_user():
