@@ -85,14 +85,23 @@ def register_user():
 def get_user_runs(user_id):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    cursor.execute('SELECT distance, duration, date FROM runs WHERE user_id = ? ORDER BY date', (user_id,))
+    cursor.execute('SELECT id, distance, duration, date FROM runs WHERE user_id = ? ORDER BY date', (user_id,))
     runs = cursor.fetchall()
     conn.close()
 
     return jsonify([
-        {'distance': r[0], 'duration': r[1], 'date': r[2]}
+        {'id': r[0], 'distance': r[1], 'duration': r[2], 'date': r[3]}
         for r in runs
     ])
+
+@app.route('/runs/<int:run_id>', methods=['DELETE'])
+def delete_run(run_id):
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM runs WHERE id = ?', (run_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'message': 'Run deleted'})
 
 
 if __name__ == '__main__':

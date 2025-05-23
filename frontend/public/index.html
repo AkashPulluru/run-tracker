@@ -1,26 +1,76 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Run Tracker</title>
+    <meta charset="UTF-8">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <canvas id="runChart" width="400" height="200"></canvas>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #0b0c10;
+            color: #c5c6c7;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        h1 {
+            color: #66fcf1;
+            margin-bottom: 0.5rem;
+        }
+
+        input, button {
+            margin: 0.5rem;
+            padding: 0.6rem;
+            border-radius: 6px;
+            border: none;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: #45a29e;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #66fcf1;
+            color: #0b0c10;
+        }
+
+        #runList li {
+            margin: 0.5rem 0;
+            background: #1f2833;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        #summary {
+            background: #1f2833;
+            margin-top: 1rem;
+            padding: 1rem;
+            border-left: 4px solid #66fcf1;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Run Tracker</h1>
+    <h1>🏃 Run Tracker</h1>
     <input id="username" placeholder="Enter username">
     <button onclick="registerUser()">Login / Register</button>
+
     <div>
         <input type="number" id="distance" placeholder="Distance (km)">
-        <input type="number" id="duration" placeholder="Duration (minutes)">
+        <input type="number" id="duration" placeholder="Duration (min)">
         <input type="date" id="date">
         <button onclick="logRun()">Log Run</button>
     </div>
 
-    <h2>Runs:</h2>
+    <canvas id="runChart" width="600" height="300"></canvas>
+    <div id="summary"></div>
+
+    <h2>Your Runs</h2>
     <ul id="runList"></ul>
 
     <script src="script.js"></script>
 </body>
 </html>
-
-
