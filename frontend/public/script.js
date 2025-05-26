@@ -11,19 +11,48 @@ function showToast(message, isError = false) {
 
 async function registerUser() {
     const username = document.getElementById('username').value.trim();
-    if (!username) return showToast("Username required", true);
+    const password = document.getElementById('password').value;
+
+    if (!username || !password) return showToast("Username & password required", true);
 
     const response = await fetch('http://localhost:5000/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username })
+        body: JSON.stringify({ username, password })
     });
 
     const data = await response.json();
-    userId = data.user_id;
-    showToast("Welcome, " + username);
-    getRuns();
-    getLeaderboard();
+    if (data.user_id) {
+        localStorage.setItem('userId', data.user_id);
+        userId = data.user_id;
+        showToast("Registered & logged in");
+        getRuns();
+        getLeaderboard();
+    }
+}
+
+async function loginUser() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (!username || !password) return showToast("Username & password required", true);
+
+    const response = await fetch('http://localhost:5000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    });
+
+    const data = await response.json();
+    if (data.user_id) {
+        localStorage.setItem('userId', data.user_id);
+        userId = data.user_id;
+        showToast("Logged in");
+        getRuns();
+        getLeaderboard();
+    } else {
+        showToast("Login failed", true);
+    }
 }
 
 async function logRun() {
@@ -44,6 +73,15 @@ async function logRun() {
     showToast("Run logged");
     getRuns();
     getLeaderboard();
+}
+
+function logout() {
+    localStorage.removeItem('userId');
+    userId = null;
+    showToast("Logged out");
+    document.getElementById('runList').innerHTML = '';
+    document.getElementById('summary').innerHTML = '';
+    document.getElementById('leaderboard').innerHTML = '';
 }
 
 async function getRuns() {
@@ -156,7 +194,9 @@ function renderChart(runs) {
 }
 
 window.onload = () => {
-    if (userId) {
+    const stored = localStorage.getItem('userId');
+    if (stored) {
+        userId = stored;
         getRuns();
         getLeaderboard();
     }

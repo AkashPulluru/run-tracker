@@ -77,8 +77,12 @@
 </head>
 <body>
     <h1>🏃 Run Tracker</h1>
-    <input id="username" placeholder="Enter username">
-    <button onclick="registerUser()">Login / Register</button>
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="loginUser()">Login</button>
+    <button onclick="registerUser()">Register</button>
+    <button onclick="logout()">Logout</button>
+
 
     <div>
         <input type="number" id="distance" placeholder="Distance (km)">

@@ -13,11 +13,12 @@ def init_db():
     cursor = conn.cursor()
 
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL
-        )
-    ''')
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL
+    )
+    ''')    
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS runs (
@@ -70,19 +71,34 @@ def get_runs():
 def register_user():
     data = request.json
     username = data['username']
+    password = data['password']
 
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    cursor.execute('INSERT OR IGNORE INTO users (username) VALUES (?)', (username,))
+    cursor.execute('INSERT OR IGNORE INTO users (username, password) VALUES (?, ?)', (username, password))
     conn.commit()
 
     cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
     user_id = cursor.fetchone()[0]
-
     conn.close()
+
     return jsonify({'user_id': user_id})
 
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    username = data['username']
+    password = data['password']
 
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute('SELECT id, password FROM users WHERE username = ?', (username,))
+    result = cursor.fetchone()
+    conn.close()
+
+    if result and result[1] == password:
+        return jsonify({'user_id': result[0]})
+    return jsonify({'error': 'Invalid credentials'}), 401
 
 @app.route('/runs/<int:user_id>', methods=['GET'])
 def get_user_runs(user_id):
