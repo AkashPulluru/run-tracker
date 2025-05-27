@@ -59,6 +59,7 @@ async function logRun() {
     const distance = parseFloat(document.getElementById('distance').value);
     const duration = parseFloat(document.getElementById('duration').value);
     const date = document.getElementById('date').value;
+    const notes = document.getElementById('notes').value;
 
     if (!userId || !distance || !duration || !date) {
         return showToast("All fields must be filled out correctly", true);
@@ -67,7 +68,7 @@ async function logRun() {
     await fetch(backendUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, distance, duration, date })
+        body: JSON.stringify({ user_id: userId, distance, duration, date, notes })
     });
 
     showToast("Run logged");
@@ -94,14 +95,20 @@ async function getRuns() {
     let totalDistance = 0;
     let totalDuration = 0;
 
+    const weekKeys = new Set();
+
     runs.forEach(run => {
         const item = document.createElement('li');
         const pace = (run.duration / run.distance).toFixed(2);
+        const runDate = new Date(run.date);
+        const weekKey = `${runDate.getFullYear()}-W${Math.ceil((runDate.getDate() + 6 - runDate.getDay()) / 7)}`;
+        weekKeys.add(weekKey);
 
         item.innerHTML = `
             <span>
                 <strong>${run.date}</strong> — ${run.distance} km in ${run.duration} min 
-                <em>(${pace} min/km)</em>
+                <em>(${pace} min/km)</em><br>
+                <small style="opacity:0.7">${run.notes || ''}</small>
             </span>
         `;
 
@@ -115,13 +122,27 @@ async function getRuns() {
         totalDuration += run.duration;
     });
 
+    // Calculate streak
+    let streak = 0;
+    let current = new Date();
+    while (true) {
+        const weekKey = `${current.getFullYear()}-W${Math.ceil((current.getDate() + 6 - current.getDay()) / 7)}`;
+        if (weekKeys.has(weekKey)) {
+            streak++;
+            current.setDate(current.getDate() - 7);
+        } else {
+            break;
+        }
+    }
+
     const pace = totalDistance > 0 ? (totalDuration / totalDistance).toFixed(2) : 0;
     document.getElementById('summary').innerHTML = `
         <h3>This Week</h3>
         Distance: ${totalDistance.toFixed(2)} km<br>
         Duration: ${totalDuration.toFixed(1)} min<br>
         Pace: ${pace} min/km<br>
-        Calories: ${(0.06 * 70 * totalDuration).toFixed(0)} kcal
+        Calories: ${(0.06 * 70 * totalDuration).toFixed(0)} kcal<br>
+        Weekly Streak: ${streak} week${streak === 1 ? '' : 's'}
     `;
 
     renderChart(runs);
@@ -162,29 +183,48 @@ function renderChart(runs) {
     const labels = runs.map(r => r.date);
     const distances = runs.map(r => r.distance);
     const durations = runs.map(r => r.duration);
+    const paces = runs.map(r => (r.duration / r.distance).toFixed(2));
 
     if (chart) chart.destroy();
     chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels,
-            datasets: [{
-                label: 'Distance (km)',
-                data: distances,
-                borderColor: '#66fcf1',
-                borderWidth: 2,
-                fill: false
-            }, {
-                label: 'Duration (min)',
-                data: durations,
-                borderColor: '#45a29e',
-                borderWidth: 2,
-                fill: false
-            }]
+            datasets: [
+                {
+                    label: 'Distance (km)',
+                    data: distances,
+                    borderColor: '#66fcf1',
+                    borderWidth: 2,
+                    fill: false
+                },
+                {
+                    label: 'Duration (min)',
+                    data: durations,
+                    borderColor: '#45a29e',
+                    borderWidth: 2,
+                    fill: false
+                },
+                {
+                    label: 'Pace (min/km)',
+                    data: paces,
+                    borderColor: '#f39c12',
+                    borderDash: [5, 5],
+                    borderWidth: 2,
+                    fill: false,
+                    yAxisID: 'paceAxis'
+                }
+            ]
         },
         options: {
             scales: {
-                y: { beginAtZero: true }
+                y: { beginAtZero: true },
+                paceAxis: {
+                    type: 'linear',
+                    position: 'right',
+                    ticks: { color: '#f39c12' },
+                    grid: { drawOnChartArea: false }
+                }
             },
             plugins: {
                 legend: { labels: { color: 'white' } }
